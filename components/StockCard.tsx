@@ -116,10 +116,10 @@ export function StockCard({ ticker, onRemove }: Props) {
               Prev: {formatPrice(data.prevClose)}
             </span>
             <span className="text-xs text-gray-600">
-              {new Date(data.updatedAt / 1_000_000).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
+              {new Date(data.updatedAt).toLocaleDateString([], {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
               })}
             </span>
           </div>

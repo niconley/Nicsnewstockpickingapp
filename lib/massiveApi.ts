@@ -1,20 +1,19 @@
-import type { MassiveTickerSnapshot } from "./types";
+import type { MassivePrevCloseResponse } from "./types";
 
 const BASE_URL = "https://api.massive.com";
 const API_KEY = "0C4p4WePmvVd_UvpC3I5kSl03YbazpG1";
 
-export async function fetchSnapshot(
+export async function fetchPrevClose(
   ticker: string
-): Promise<MassiveTickerSnapshot> {
+): Promise<MassivePrevCloseResponse> {
   const url = new URL(
-    `/v2/snapshot/locale/us/markets/stocks/tickers/${ticker.toUpperCase()}`,
+    `/v2/aggs/ticker/${ticker.toUpperCase()}/prev`,
     BASE_URL
   );
   url.searchParams.set("apiKey", API_KEY);
 
   const res = await fetch(url.toString(), {
     headers: { Accept: "application/json" },
-    // Disable Next.js fetch caching — we always want fresh data
     next: { revalidate: 0 },
   });
 
@@ -23,5 +22,5 @@ export async function fetchSnapshot(
     throw new Error(`Massive API ${res.status}${body ? `: ${body}` : ""}`);
   }
 
-  return res.json() as Promise<MassiveTickerSnapshot>;
+  return res.json() as Promise<MassivePrevCloseResponse>;
 }

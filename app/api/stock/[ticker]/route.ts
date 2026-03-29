@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchSnapshot } from "@/lib/massiveApi";
-import type { StockSnapshot, MassiveTickerSnapshot } from "@/lib/types";
+import { fetchPrevClose } from "@/lib/massiveApi";
+import type { StockSnapshot } from "@/lib/types";
 
 export async function GET(
   _req: NextRequest,
@@ -10,24 +10,27 @@ export async function GET(
   const ticker = rawTicker.toUpperCase();
 
   try {
-    const raw: MassiveTickerSnapshot = await fetchSnapshot(ticker);
+    const raw = await fetchPrevClose(ticker);
 
-    // Prefer last trade price; fall back to most recent minute bar close
-    const price = raw.ticker.lastTrade?.p ?? raw.ticker.min?.c ?? 0;
+    if (!raw.results || raw.results.length === 0) {
+      return NextResponse.json({ error: `Ticker "${ticker}" not found` }, { status: 404 });
+    }
+
+    const bar = raw.results[0];
 
     const snapshot: StockSnapshot = {
       ticker,
-      price,
-      change: raw.ticker.todaysChange,
-      changePercent: raw.ticker.todaysChangePerc,
-      open: raw.ticker.day.o,
-      high: raw.ticker.day.h,
-      low: raw.ticker.day.l,
-      close: raw.ticker.day.c,
-      volume: raw.ticker.day.v,
-      vwap: raw.ticker.day.vw,
-      prevClose: raw.ticker.prevDay.c,
-      updatedAt: raw.ticker.updated,
+      price: bar.c,
+      change: bar.c - bar.o,
+      changePercent: ((bar.c - bar.o) / bar.o) * 100,
+      open: bar.o,
+      high: bar.h,
+      low: bar.l,
+      close: bar.c,
+      volume: bar.v,
+      vwap: bar.vw,
+      prevClose: bar.o,
+      updatedAt: bar.t,
     };
 
     return NextResponse.json(snapshot);
