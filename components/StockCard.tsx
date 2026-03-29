@@ -2,6 +2,7 @@
 
 import { useStockData } from "@/hooks/useStockData";
 import { StockCardSkeleton } from "./StockCardSkeleton";
+import { PriceChart } from "./PriceChart";
 
 interface Props {
   ticker: string;
@@ -26,50 +27,41 @@ function formatChange(change: number, pct: number) {
 export function StockCard({ ticker, onRemove }: Props) {
   const { data, status, errorMsg, retry } = useStockData(ticker);
 
-  // First load — show skeleton
   if (status === "loading" && !data) {
     return <StockCardSkeleton />;
   }
 
   const isUp = (data?.change ?? 0) >= 0;
-  const changeColor = isUp ? "text-green-400" : "text-red-400";
-  const changeBg = isUp ? "bg-green-950" : "bg-red-950";
 
   return (
-    <div className="relative bg-gray-900 rounded-xl border border-gray-800 p-4 shadow-lg hover:border-gray-600 transition-colors">
+    <div className="retro-card group">
       {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <span className="text-sm font-bold text-white tracking-widest">{ticker}</span>
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
+          <span className="retro-ticker">{ticker}</span>
           {status === "loading" && data && (
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" title="Refreshing" />
+            <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
           )}
-          <button
-            onClick={() => onRemove(ticker)}
-            className="text-gray-500 hover:text-white text-lg leading-none transition-colors"
-            aria-label={`Remove ${ticker}`}
-          >
-            ×
-          </button>
         </div>
+        <button
+          onClick={() => onRemove(ticker)}
+          className="retro-btn-close"
+          aria-label={`Remove ${ticker}`}
+        >
+          X
+        </button>
       </div>
 
-      {/* Error state (no data yet) */}
+      {/* Error state */}
       {status === "error" && !data && (
-        <div className="py-4">
-          <p className="text-red-400 text-sm mb-3">{errorMsg}</p>
-          <div className="flex gap-2">
-            <button
-              onClick={retry}
-              className="text-xs text-blue-400 hover:text-blue-300 underline"
-            >
-              Retry
+        <div className="py-6 text-center">
+          <p className="font-mono text-sm text-red-600 mb-3">{errorMsg}</p>
+          <div className="flex justify-center gap-3">
+            <button onClick={retry} className="retro-btn retro-btn-blue text-xs">
+              RETRY
             </button>
-            <button
-              onClick={() => onRemove(ticker)}
-              className="text-xs text-gray-500 hover:text-gray-300 underline"
-            >
-              Remove
+            <button onClick={() => onRemove(ticker)} className="retro-btn retro-btn-red text-xs">
+              REMOVE
             </button>
           </div>
         </div>
@@ -78,24 +70,33 @@ export function StockCard({ ticker, onRemove }: Props) {
       {/* Data */}
       {data && (
         <>
-          {/* Price */}
-          <div className="text-2xl font-bold text-white mb-1">
-            {formatPrice(data.price)}
+          {/* Price + Change */}
+          <div className="mb-1">
+            <div className="text-3xl font-black font-mono tracking-tight text-gray-900">
+              {formatPrice(data.price)}
+            </div>
+            <div className={`inline-block font-mono text-sm font-bold px-2 py-0.5 mt-1 border-2 ${
+              isUp
+                ? "text-green-700 bg-green-100 border-green-400"
+                : "text-red-700 bg-red-100 border-red-400"
+            }`}>
+              {formatChange(data.change, data.changePercent)}
+            </div>
           </div>
 
-          {/* Change badge */}
-          <div className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-4 ${changeBg} ${changeColor}`}>
-            {formatChange(data.change, data.changePercent)}
+          {/* Chart */}
+          <div className="my-3 -mx-1">
+            <PriceChart data={data.chart} isUp={isUp} />
           </div>
 
-          {/* OHLC */}
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          {/* OHLC Grid */}
+          <div className="grid grid-cols-4 gap-1 mb-2 bg-gray-50 border-2 border-gray-200 p-2">
             {(["open", "high", "low", "close"] as const).map((key) => (
-              <div key={key}>
-                <div className="text-xs text-gray-500 uppercase mb-0.5">
+              <div key={key} className="text-center">
+                <div className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
                   {key[0]}
                 </div>
-                <div className="text-xs text-gray-300 font-medium">
+                <div className="text-xs font-mono font-bold text-gray-700">
                   {formatPrice(data[key])}
                 </div>
               </div>
@@ -103,33 +104,27 @@ export function StockCard({ ticker, onRemove }: Props) {
           </div>
 
           {/* Volume + VWAP */}
-          <div className="text-xs text-gray-400 mb-0.5">
-            Vol: <span className="text-gray-300">{formatVolume(data.volume)}</span>
-          </div>
-          <div className="text-xs text-gray-400 mb-2">
-            VWAP: <span className="text-gray-300">{formatPrice(data.vwap)}</span>
+          <div className="flex justify-between font-mono text-xs text-gray-500 mb-2">
+            <span>VOL: <span className="font-bold text-gray-700">{formatVolume(data.volume)}</span></span>
+            <span>VWAP: <span className="font-bold text-gray-700">{formatPrice(data.vwap)}</span></span>
           </div>
 
-          {/* Prev close + timestamp */}
-          <div className="border-t border-gray-800 pt-2 flex items-center justify-between">
-            <span className="text-xs text-gray-500">
-              Prev: {formatPrice(data.prevClose)}
-            </span>
-            <span className="text-xs text-gray-600">
-              {new Date(data.updatedAt).toLocaleDateString([], {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </span>
+          {/* Footer */}
+          <div className="border-t-2 border-dashed border-gray-200 pt-2 flex items-center justify-between font-mono text-[10px] text-gray-400">
+            <span>PREV: {formatPrice(data.prevClose)}</span>
+            <span>{new Date(data.updatedAt).toLocaleDateString([], {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}</span>
           </div>
 
-          {/* Error overlay on existing data */}
+          {/* Error overlay */}
           {status === "error" && (
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-xs text-yellow-500">⚠ Refresh failed</span>
-              <button onClick={retry} className="text-xs text-blue-400 hover:text-blue-300 underline">
-                Retry
+            <div className="mt-2 flex items-center justify-between border-t-2 border-yellow-300 pt-2">
+              <span className="text-xs font-mono text-yellow-600 font-bold">REFRESH FAILED</span>
+              <button onClick={retry} className="retro-btn retro-btn-blue text-[10px]">
+                RETRY
               </button>
             </div>
           )}

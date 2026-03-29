@@ -1,27 +1,22 @@
 export function StockCardSkeleton() {
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 shadow-lg animate-pulse">
-      {/* Header row */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="h-5 w-16 bg-gray-700 rounded" />
-        <div className="h-5 w-5 bg-gray-700 rounded" />
+    <div className="retro-card animate-pulse">
+      <div className="flex items-center justify-between mb-3">
+        <div className="h-6 w-20 bg-gray-200 rounded" />
+        <div className="h-6 w-6 bg-gray-200 rounded" />
       </div>
-      {/* Price */}
-      <div className="h-8 w-28 bg-gray-700 rounded mb-2" />
-      {/* Change badge */}
-      <div className="h-5 w-24 bg-gray-700 rounded mb-4" />
-      {/* OHLC grid */}
-      <div className="grid grid-cols-4 gap-2 mb-3">
+      <div className="h-9 w-32 bg-gray-200 rounded mb-2" />
+      <div className="h-6 w-28 bg-gray-200 rounded mb-3" />
+      <div className="h-28 bg-gray-100 rounded mb-3" />
+      <div className="grid grid-cols-4 gap-1 bg-gray-50 border-2 border-gray-200 p-2 mb-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-1">
-            <div className="h-3 w-6 bg-gray-700 rounded" />
-            <div className="h-4 w-12 bg-gray-700 rounded" />
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div className="h-3 w-4 bg-gray-200 rounded" />
+            <div className="h-3 w-12 bg-gray-200 rounded" />
           </div>
         ))}
       </div>
-      {/* Volume row */}
-      <div className="h-4 w-32 bg-gray-700 rounded mb-1" />
-      <div className="h-3 w-24 bg-gray-700 rounded" />
+      <div className="h-4 w-full bg-gray-100 rounded" />
     </div>
   );
 }

@@ -1,3 +1,8 @@
+export interface ChartPoint {
+  date: string;
+  close: number;
+}
+
 export interface StockSnapshot {
   ticker: string;
   price: number;
@@ -11,6 +16,7 @@ export interface StockSnapshot {
   vwap: number;
   prevClose: number;
   updatedAt: number;
+  chart: ChartPoint[];
 }
 
 export interface ApiError {

@@ -18,7 +18,7 @@ export function WatchlistInput({ onAdd, existingTickers }: Props) {
     if (!ticker) return;
 
     if (!/^[A-Z]{1,5}$/.test(ticker)) {
-      setValidationMsg("Tickers are 1–5 letters (e.g. AAPL, MSFT)");
+      setValidationMsg("Tickers are 1-5 letters (e.g. AAPL, MSFT)");
       return;
     }
 
@@ -34,7 +34,7 @@ export function WatchlistInput({ onAdd, existingTickers }: Props) {
 
   return (
     <div className="mb-8">
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-3 items-center">
         <input
           type="text"
           value={value}
@@ -42,21 +42,18 @@ export function WatchlistInput({ onAdd, existingTickers }: Props) {
             setValue(e.target.value.toUpperCase());
             setValidationMsg(null);
           }}
-          placeholder="Enter ticker (e.g. AAPL)"
+          placeholder="TICKER"
           maxLength={5}
           autoComplete="off"
           spellCheck={false}
-          className="flex-1 max-w-xs bg-gray-800 text-white placeholder-gray-500 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+          className="retro-input"
         />
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
-        >
-          Add
+        <button type="submit" className="retro-btn retro-btn-green">
+          + ADD
         </button>
       </form>
       {validationMsg && (
-        <p className="mt-2 text-red-400 text-sm">{validationMsg}</p>
+        <p className="mt-2 font-mono text-sm font-bold text-red-500">{validationMsg}</p>
       )}
     </div>
   );

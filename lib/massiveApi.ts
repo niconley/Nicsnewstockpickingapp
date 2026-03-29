@@ -24,3 +24,29 @@ export async function fetchPrevClose(
 
   return res.json() as Promise<MassivePrevCloseResponse>;
 }
+
+export async function fetchDailyBars(
+  ticker: string,
+  from: string,
+  to: string
+): Promise<MassivePrevCloseResponse> {
+  const url = new URL(
+    `/v2/aggs/ticker/${ticker.toUpperCase()}/range/1/day/${from}/${to}`,
+    BASE_URL
+  );
+  url.searchParams.set("apiKey", API_KEY);
+  url.searchParams.set("adjusted", "true");
+  url.searchParams.set("sort", "asc");
+
+  const res = await fetch(url.toString(), {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 0 },
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Massive API ${res.status}${body ? `: ${body}` : ""}`);
+  }
+
+  return res.json() as Promise<MassivePrevCloseResponse>;
+}

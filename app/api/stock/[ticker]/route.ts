@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchPrevClose } from "@/lib/massiveApi";
+import { fetchPrevClose, fetchDailyBars } from "@/lib/massiveApi";
 import type { StockSnapshot } from "@/lib/types";
 
 export async function GET(
@@ -10,13 +10,28 @@ export async function GET(
   const ticker = rawTicker.toUpperCase();
 
   try {
-    const raw = await fetchPrevClose(ticker);
+    // Fetch previous close and 30-day chart data in parallel
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 42); // 42 calendar days ≈ 30 trading days
+    const toDate = today.toISOString().split("T")[0];
+    const fromDate = thirtyDaysAgo.toISOString().split("T")[0];
 
-    if (!raw.results || raw.results.length === 0) {
+    const [prevClose, dailyBars] = await Promise.all([
+      fetchPrevClose(ticker),
+      fetchDailyBars(ticker, fromDate, toDate),
+    ]);
+
+    if (!prevClose.results || prevClose.results.length === 0) {
       return NextResponse.json({ error: `Ticker "${ticker}" not found` }, { status: 404 });
     }
 
-    const bar = raw.results[0];
+    const bar = prevClose.results[0];
+
+    const chart = (dailyBars.results ?? []).map((b) => ({
+      date: new Date(b.t).toISOString().split("T")[0],
+      close: b.c,
+    }));
 
     const snapshot: StockSnapshot = {
       ticker,
@@ -31,6 +46,7 @@ export async function GET(
       vwap: bar.vw,
       prevClose: bar.o,
       updatedAt: bar.t,
+      chart,
     };
 
     return NextResponse.json(snapshot);
